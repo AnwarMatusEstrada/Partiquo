@@ -14,6 +14,9 @@ struct MenuView: View {
                 NavigationLink(destination:{CalcView()}){
                     Text("Calculadora")
                 }
+                NavigationLink(destination:{BLETestView()}){
+                    Text("BLE Test")
+                }
             }
         }
     }
