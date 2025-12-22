@@ -1,26 +1,82 @@
 import Foundation
 import CoreBluetooth
+import SwiftUI
+internal import Combine
 
-struct Signal {
-    static var sign: String = "Start"
+struct BLETestView: View {
+    @StateObject private var ble: BLE = BLE()
+    @State var sta: String = "no data"
+    @State var cbuuid: String = "no data"
+    @State var r: Bool = false
+    
+    var body: some View {
+        VStack{
+            Button("Iniciar mediciones") {
+                ble.sign = "Start"
+                if r == false {
+                    ble.TimerToggle(peripheral_s: ble.peripheral_s)
+                }
+                r = true
+                cbuuid = "\(ble.getCBUUID())"
+                sta = "\(ble.centralManager.state)"
+            }
+            Text(ble.fin)
+            Text(sta)
+            Text(cbuuid)
+            
+            Button("Detener mediciones") {
+                ble.sign = "Stop"
+                r = false
+                ble.TimerToggle(peripheral_s: ble.peripheral_s)
+            }
+        }
+    }
 }
 
-class BLE: NSObject, CBCentralManagerDelegate, CBPeripheralDelegate{
+class BLE: NSObject, CBCentralManagerDelegate, CBPeripheralDelegate, ObservableObject{
     
     
     var centralManager : CBCentralManager!
-    var peripheral_s: CBPeripheral!
+    @Published var peripheral_s: CBPeripheral!
     
     required override init() {
         centralManager = CBCentralManager(delegate: nil, queue: nil)
         super.init()
         centralManager = CBCentralManager(delegate: self, queue: DispatchQueue.global())
-     
+        
     }
+    @Published var chara: [CBCharacteristic] = []
+    @Published var sign: String = ""
+    @Published var fin: String = "- -"
+    @Published var timer: Timer = Timer()
+    
     
     @objc func restart() {
+        sign = "Start"
         self.centralManager = CBCentralManager(delegate: nil, queue: nil)
         self.centralManager = CBCentralManager(delegate: self, queue: DispatchQueue.global())
+        ActivityStart()
+    }
+    
+    func TimerToggle(peripheral_s: CBPeripheral) {
+        
+        if sign == "Start" {
+            timer = Timer.scheduledTimer(withTimeInterval: 2.0, repeats: true) {_ in
+                self.Conn(peripheral_s  )
+                self.ActivityStart()
+            }
+        }
+        if sign == "Stop" {
+            timer.invalidate()
+        }
+    }
+    
+    func ActivityStart() {
+        var chara1 = chara.first!
+        var chara2 = chara.last!
+        var msg: String = "$\(sign)$"
+        peripheral_s.setNotifyValue(true, for: chara1)
+        peripheral_s.writeValue(msg.data(using: .utf8)!, for: chara2, type: .withResponse)
     }
     
     func centralManagerDidUpdateState(_ central: CBCentralManager) {
@@ -97,67 +153,16 @@ class BLE: NSObject, CBCentralManagerDelegate, CBPeripheralDelegate{
     }
     
     func peripheral(_ peripheral_s: CBPeripheral, didDiscoverCharacteristicsFor service: CBService, error: (any Error)?) {
-        let chara = peripheral_s.services!.first!.characteristics
+        chara = service.characteristics!
         //print("Characteristic: \(chara!)")
         //[<CBCharacteristic: 0x12e14a1c0, UUID = 6E400003-B5A3-F393-E0A9-E50E24DCCA9E, properties = 0x12, value = (null), notifying = NO>, <CBCharacteristic: 0x12e148a80, UUID = 6E400002-B5A3-F393-E0A9-E50E24DCCA9E, properties = 0xC, value = (null), notifying = NO>]
-        var chara1 = chara!.first!
-        var chara2 = chara!.last!
-        //chara1.setValue(true, forKey: "notifying")
-        var msg: String = "$\(Signal.sign)$"
-        peripheral_s.setNotifyValue(true, for: chara1)
-        peripheral_s.writeValue(msg.data(using: .utf8)!, for: chara2, type: .withResponse)
     }
   
     func peripheral(_ peripheral_s: CBPeripheral, didUpdateValueFor chara1: CBCharacteristic, error: Error?) {
         var datas = chara1.value
         var byteData = Data(datas!)
-        var fin = String(data: byteData, encoding: .utf8)!
+        fin = String(data: byteData, encoding: .utf8)!
         print(fin)
     }
-}
-
-import SwiftUI
-
-struct BLETestView: View {
-    @State var sta: String = "no data"
-    @State var cbuuid: String = "no data"
-    @State var r: Bool = false
-    @State var ble: BLE!
-    
-    var body: some View {
-        VStack{
-            Button("Iniciar mediciones") {
-                Signal.sign = "Start"
-                if r == false {
-                    ble = timer()
-                }
-                r = true
-                cbuuid = "\(ble.getCBUUID())"
-                sta = "\(ble.centralManager.state)"
-            }
-            Text(sta)
-            Text(cbuuid)
-            Button("Detener mediciones") {
-                Signal.sign = "Stop"
-                r = false
-                ble = timer()
-            }
-        }
-    }
-}
-
-func timer() -> BLE {
-    
-    weak var timer: Timer?
-    @State var ble: BLE = BLE()
-    if Signal.sign == "Start" {
-        timer = Timer.scheduledTimer(withTimeInterval: 5.0, repeats: true) {_ in
-            ble.restart()
-        }
-    }
-    if Signal.sign == "Stop" {
-        timer?.invalidate()
-    }
-    return ble
 }
 
