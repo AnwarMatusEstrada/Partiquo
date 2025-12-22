@@ -4,9 +4,9 @@ import SwiftUI
 internal import Combine
 
 struct BLETestView: View {
+    
     @StateObject private var ble: BLE = BLE()
-    @State var sta: String = "no data"
-    @State var cbuuid: String = "no data"
+    @State var sta: String = ""
     @State var r: Bool = false
     
     var body: some View {
@@ -14,20 +14,25 @@ struct BLETestView: View {
             Button("Iniciar mediciones") {
                 ble.sign = "Start"
                 if r == false {
-                    ble.TimerToggle(peripheral_s: ble.peripheral_s)
+                    ble.TimerToggle()
                 }
                 r = true
-                cbuuid = "\(ble.getCBUUID())"
                 sta = "\(ble.centralManager.state)"
             }
-            Text(ble.fin)
+            Text(ble.fin).padding(10)
             Text(sta)
-            Text(cbuuid)
             
             Button("Detener mediciones") {
+                
                 ble.sign = "Stop"
                 r = false
-                ble.TimerToggle(peripheral_s: ble.peripheral_s)
+                ble.TimerToggle()
+            }
+            Button("Reset Bluetooth") {
+                ble.sign = "Start"
+                ble.fin = "Resetting"
+                r = true
+                ble.restart()
             }
         }
     }
@@ -37,7 +42,7 @@ class BLE: NSObject, CBCentralManagerDelegate, CBPeripheralDelegate, ObservableO
     
     
     var centralManager : CBCentralManager!
-    @Published var peripheral_s: CBPeripheral!
+    var peripheral_s: CBPeripheral!
     
     required override init() {
         centralManager = CBCentralManager(delegate: nil, queue: nil)
@@ -52,31 +57,38 @@ class BLE: NSObject, CBCentralManagerDelegate, CBPeripheralDelegate, ObservableO
     
     
     @objc func restart() {
-        sign = "Start"
+        //centralManager.cancelPeripheralConnection(peripheral_s)
         self.centralManager = CBCentralManager(delegate: nil, queue: nil)
         self.centralManager = CBCentralManager(delegate: self, queue: DispatchQueue.global())
-        ActivityStart()
+        Conn()
+        TimerToggle()
     }
     
-    func TimerToggle(peripheral_s: CBPeripheral) {
+    func TimerToggle() {
         
         if sign == "Start" {
             timer = Timer.scheduledTimer(withTimeInterval: 2.0, repeats: true) {_ in
-                self.Conn(peripheral_s  )
                 self.ActivityStart()
             }
+            print("Started Timer")
         }
         if sign == "Stop" {
             timer.invalidate()
+            print("Invalidated Timer")
+            fin = "- -"
         }
     }
     
-    func ActivityStart() {
-        var chara1 = chara.first!
-        var chara2 = chara.last!
-        var msg: String = "$\(sign)$"
-        peripheral_s.setNotifyValue(true, for: chara1)
-        peripheral_s.writeValue(msg.data(using: .utf8)!, for: chara2, type: .withResponse)
+    @objc func ActivityStart() {
+        if chara.isEmpty {
+            restart()
+        } else {
+            let chara1 = chara.first
+            let chara2 = chara.last
+            let msg: String = "$\(sign)$"
+            peripheral_s.setNotifyValue(true, for: chara1!)
+            peripheral_s.writeValue(msg.data(using: .utf8)!, for: chara2!, type: .withResponse)
+        }
     }
     
     func centralManagerDidUpdateState(_ central: CBCentralManager) {
@@ -118,16 +130,12 @@ class BLE: NSObject, CBCentralManagerDelegate, CBPeripheralDelegate, ObservableO
             //print("\(peripheral) =? \(peripheral)")
             peripheral_s = peripheral
             peripheral_s.delegate = self
-            Conn(peripheral_s)
+            Conn()
         }
     }
     func centralManager(_ central: CBCentralManager, didConnect peripheral_s: CBPeripheral) {
         print("Connected to peripheral: \(peripheral_s.name!)")
         peripheral_s.discoverServices(nil)
-        
-        //for i in 0...100 {
-            
-        //}
     }
     
     func peripheral(_ peripheral_s: CBPeripheral, didDiscoverServices  error: Error?){
@@ -147,7 +155,7 @@ class BLE: NSObject, CBCentralManagerDelegate, CBPeripheralDelegate, ObservableO
         //print("\(CBUUIDConst)")
         return CBUUIDConst
     }
-    func Conn(_ peripheral_s: CBPeripheral){
+    func Conn(){
         print("Connecting")
         centralManager?.connect(peripheral_s, options: nil)
     }
@@ -159,10 +167,24 @@ class BLE: NSObject, CBCentralManagerDelegate, CBPeripheralDelegate, ObservableO
     }
   
     func peripheral(_ peripheral_s: CBPeripheral, didUpdateValueFor chara1: CBCharacteristic, error: Error?) {
-        var datas = chara1.value
-        var byteData = Data(datas!)
+        let datas = chara1.value
+        let byteData = Data(datas!)
         fin = String(data: byteData, encoding: .utf8)!
         print(fin)
+    }
+    
+    func centralManager(_ central: CBCentralManager, didFailToConnect peripheral_s: CBPeripheral, error: (any Error)?) {
+        fin = "Failed to connect"
+        restart()
+    }
+    
+    func centralManager(_ central: CBCentralManager, didDisconnectPeripheral peripheral_s: CBPeripheral, timestamp: CFAbsoluteTime, isReconnecting: Bool, error: (any Error)?) {
+        fin = "Disconnected"
+        if isReconnecting {
+            Conn()
+        } else {
+            restart()
+        }
     }
 }
 
