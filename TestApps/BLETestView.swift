@@ -80,6 +80,8 @@ class BLE: NSObject, CBCentralManagerDelegate, CBPeripheralDelegate, ObservableO
     func restart() {
         self.centralManager = CBCentralManager(delegate: nil, queue: nil)
         self.centralManager = CBCentralManager(delegate: self, queue: DispatchQueue.global())
+        Conn()
+        TimerToggle()
     }
     
     func TimerToggle() {
@@ -93,6 +95,7 @@ class BLE: NSObject, CBCentralManagerDelegate, CBPeripheralDelegate, ObservableO
         if sign == "Stop" {
             timer.invalidate()
             print("Invalidated Timer")
+            fin = "- -"
         }
     }
     
@@ -211,6 +214,15 @@ class BLE: NSObject, CBCentralManagerDelegate, CBPeripheralDelegate, ObservableO
         } else {
             restart()
         }
+    }
+    
+    func centralManager(_ central: CBCentralManager, didDisconnectPeripheral peripheral_s: CBPeripheral, error: (any Error)?) {
+        fin = "Disconnected"
+    }
+    
+    func centralManager(_ central: CBCentralManager, didFailToConnect peripheral: CBPeripheral, error: (any Error)?) {
+        fin = "Failed to connect"
+        restart()
     }
 }
 
