@@ -14,6 +14,7 @@ struct BLETestView: View {
     @State var r: Bool = false
     @State var coordinates: (lat: Double, lon: Double) = (0, 0)
     @State var tokens: Set<AnyCancellable> = []
+    @State var fn: String = "default.csv"
     
     var body: some View {
         VStack{
@@ -45,19 +46,47 @@ struct BLETestView: View {
                 recvData.restart()
                 fin = "Wait and press initiate"
             }
+            NavigationStack{
+                NavigationLink(destination:{MapView(fn: $fn)}){
+                    Text("Map")
+                }
+            }
         }.onAppear {
             observe()
             recvData.requestLocationUpdates()
         }
     }
     
+    func writeToHist(msg: Data, fname: String) -> Bool{
+        let Dir: URL = DocDir()
+        let file: URL = Dir.appendingPathComponent(fname)
+        do {
+            let fileHandle = try FileHandle(forWritingTo: file)
+            defer {
+                fileHandle.closeFile()
+            }
+            fileHandle.seekToEndOfFile()
+            try fileHandle.write(contentsOf: msg)
+            return true
+        } catch {
+            let fileManager = FileManager.default
+            let success = fileManager.createFile(atPath: file.path, contents: nil, attributes: nil)
+            if !success {
+                print("Error: Failed to create file at path: \(file.path)")
+                return true
+            }
+        } catch {
+            print("Not written to file: \(error)")
+            return false
+        }
+        return false
+    }
+    
     func formattedTime() -> String{
         var date = Date()
         var calendar = Calendar.current
         var components = calendar.dateComponents([.year, .month, .day, .hour, .minute, .second], from: date)
-        //var datf0 = String("\(dateNow)").split(separator: " ")[0]
-        //var datf1 = String("\(dateNow)").split(separator: " ")[1]
-        //return "\(datf0) \(datf1)"
+        fn = "\(components.year!)-\(components.month!)-\(components.day!).csv"
         return "\(components.year!)-\(components.month!)-\(components.day!) \(components.hour!):\(components.minute!):\(components.second!)"
         }
 
@@ -81,6 +110,7 @@ struct BLETestView: View {
                 var lon = "\(self.coordinates.lon)"
                 var todo = "\(dt),\(lat),\(lon),\(FIN)\n"
                 self.fin = todo
+                print("written to file?: \(writeToHist(msg: todo.data(using: .utf8)!, fname: fn)) \(fn)")
             }
             .store(in: &tokens)
     }
