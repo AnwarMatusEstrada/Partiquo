@@ -3,6 +3,7 @@ import CoreBluetooth
 import SwiftUI
 internal import Combine
 import CoreLocation
+import AVFoundation
 
 struct BLETestView: View {
     
@@ -16,6 +17,7 @@ struct BLETestView: View {
     @State var tokens: Set<AnyCancellable> = []
     @State var fn: String = "default.csv"
     @State var maxread: Int = 100000
+    @State var showAlert:Bool = false
     
     var body: some View {
         VStack{
@@ -32,7 +34,6 @@ struct BLETestView: View {
             //Text("\(coordinates.lat)")
             //Text("\(coordinates.lon)")
             //Text(sta)
-            
             Button("Stop meditions") {
                 
                 recvData.sign = "Stop"
@@ -54,16 +55,22 @@ struct BLETestView: View {
                 .cornerRadius(5)
             
             NavigationStack{
-                NavigationLink(destination:{MapView(fn: $fn, maxread: $maxread)}){
+                NavigationLink(destination:{MapView(fn: fn, maxread: $maxread)}){
                     Text("Map")
                 }
-                NavigationLink(destination:{MenuArchView(fn: $fn, maxread: $maxread)}){
+                NavigationLink(destination:{MenuArchView(maxread: $maxread)}){
                     Text("Select file")
                 }
             }
         }.onAppear {
             observe()
             recvData.requestLocationUpdates()
+        }.alert("PM peligroso", isPresented: $showAlert) { // Binds to the state variable
+            Button("OK") {
+                // Action to perform when dismissed (optional)
+            }
+        } message: {
+            Text(fin)
         }
     }
     
@@ -99,7 +106,7 @@ struct BLETestView: View {
         fn = "\(components.year!)-\(components.month!)-\(components.day!).csv"
         return "\(components.year!)-\(components.month!)-\(components.day!) \(components.hour!):\(components.minute!):\(components.second!)"
         }
-
+    let feedback = UIImpactFeedbackGenerator(style: .heavy)
     func observe() {
         recvData.locationPublisher
             .receive(on: DispatchQueue.main)
@@ -120,6 +127,12 @@ struct BLETestView: View {
                 var lon = "\(self.coordinates.lon)"
                 var todo = "\(dt),\(lat),\(lon),\(FIN)\n"
                 self.fin = todo
+                if (FIN != "- -") && (FIN != "Resetting...") && (FIN != "Wait and press initiate") && (FIN != "") && ((Int(FIN.split(separator: ",")[0])!) > 150){
+                    self.showAlert = true
+                    feedback.impactOccurred()
+                    let systemSoundID: SystemSoundID = 1016
+                    AudioServicesPlaySystemSound(systemSoundID)
+                }
                 print("written to file?: \(writeToHist(msg: todo.data(using: .utf8)!, fname: fn)) \(fn)")
             }
             .store(in: &tokens)

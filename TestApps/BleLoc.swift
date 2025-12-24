@@ -105,7 +105,7 @@ class BLE: NSObject, CBCentralManagerDelegate, CBPeripheralDelegate, CLLocationM
     
     func Scan() {
         centralManager.scanForPeripherals(withServices: nil, options: nil)
-        print("Scanning: \(centralManager.isScanning)")
+        //print("Scanning: \(centralManager.isScanning)")
     }
     
     func centralManager(_ central: CBCentralManager, didDiscover peripheral: CBPeripheral, advertisementData: [String : Any], rssi RSSI: NSNumber) {
@@ -144,7 +144,12 @@ class BLE: NSObject, CBCentralManagerDelegate, CBPeripheralDelegate, CLLocationM
     }
     func Conn(){
         print("Connecting")
-        centralManager?.connect(peripheral_s, options: nil)
+        do {
+            try centralManager.connect(peripheral_s)
+        } catch {
+            restart()
+            self.Conn()
+        }
     }
     
     func peripheral(_ peripheral_s: CBPeripheral, didDiscoverCharacteristicsFor service: CBService, error: (any Error)?) {
@@ -170,7 +175,7 @@ class BLE: NSObject, CBCentralManagerDelegate, CBPeripheralDelegate, CLLocationM
     func locationManager(_ manager: CLLocationManager, didUpdateLocations locations: [CLLocation]) {
         guard let location = locations.last else { return }
         locationPublisher.send(location.coordinate)
-        print("\(location.coordinate)")
+        //print("\(location.coordinate)")
     }
   
     func peripheral(_ peripheral_s: CBPeripheral, didUpdateValueFor chara1: CBCharacteristic, error: Error?) {
@@ -178,7 +183,7 @@ class BLE: NSObject, CBCentralManagerDelegate, CBPeripheralDelegate, CLLocationM
         //let byteData = Data(datas!)
         let FIN = String(data: Data(chara1.value!), encoding: .utf8)!
         BLEPublisher.send(FIN)
-        print(FIN)
+        //print(FIN)
         //publish(asgn: fin, data: String(data: byteData, encoding: .utf8)! )
     }
     

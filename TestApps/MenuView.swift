@@ -10,7 +10,7 @@ import SwiftUI
 struct MenuView: View {
     var body: some View {
         NavigationStack{
-            VStack{
+            List{
                 NavigationLink(destination:{CalcView()}){
                     Text("Calculadora")
                 }
