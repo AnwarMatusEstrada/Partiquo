@@ -7,9 +7,10 @@ class BLE: NSObject, CBCentralManagerDelegate, CBPeripheralDelegate, CLLocationM
     
     var BLEPublisher = PassthroughSubject<String, Error>()
     var locationPublisher = PassthroughSubject<CLLocationCoordinate2D, Error>()
+    var BLEDevPublisher = PassthroughSubject<CBPeripheral, Error>()
     
     var centralManager : CBCentralManager!
-    var peripheral_s: CBPeripheral!
+    @Published var peripheral_s: CBPeripheral!
     
     var chara: [CBCharacteristic] = []
     @Published var sign: String = ""
@@ -50,10 +51,10 @@ class BLE: NSObject, CBCentralManagerDelegate, CBPeripheralDelegate, CLLocationM
         self.centralManager = CBCentralManager(delegate: self, queue: DispatchQueue.global())
     }
     
-    func TimerToggle() {
+    func TimerToggle(seg: Double) {
         
         if sign == "Start" {
-            timer = Timer.scheduledTimer(withTimeInterval: 2.0, repeats: true) {_ in
+            timer = Timer.scheduledTimer(withTimeInterval: seg, repeats: true) {_ in
                 self.ActivityStart()
             }
             print("Started Timer")
@@ -111,15 +112,16 @@ class BLE: NSObject, CBCentralManagerDelegate, CBPeripheralDelegate, CLLocationM
     func centralManager(_ central: CBCentralManager, didDiscover peripheral: CBPeripheral, advertisementData: [String : Any], rssi RSSI: NSNumber) {
         //print("Periph. available: \(peripheral)")
         //print("ID Data:\(peripheral)")
-        if ((peripheral.identifier) == UUID(uuidString: "F3DEFC13-3F91-8011-07EE-ED63B11804F7")) {
-            print("ID Data:\(peripheral.identifier), \(peripheral.name!)")
-            //print("\(peripheral) =? \(peripheral)")
-            peripheral_s = peripheral
-            peripheral_s.delegate = self
+        BLEDevPublisher.send(peripheral)
+        //        if ((peripheral.identifier) == UUID(uuidString: "F3DEFC13-3F91-8011-07EE-ED63B11804F7")) {
+        //            print("ID Data:\(peripheral.identifier), \(peripheral.name!)")
+        //            //print("\(peripheral) =? \(peripheral)")
+        //peripheral_s = peripheral
+        //            peripheral_s.delegate = self
             //let FIN = "\(peripheral_s.identifier)"
             //BLEPublisher.send(FIN)
-        }
     }
+
     func centralManager(_ central: CBCentralManager, didConnect peripheral_s: CBPeripheral) {
         print("Connected to peripheral: \(peripheral_s.name!)")
         peripheral_s.discoverServices(nil)
@@ -142,13 +144,19 @@ class BLE: NSObject, CBCentralManagerDelegate, CBPeripheralDelegate, CLLocationM
         //print("\(CBUUIDConst)")
         return CBUUIDConst
     }
-    func Conn(){
+
+    func Conn(peri: CBPeripheral){
         print("Connecting")
+        if peri == nil {
+            return
+        }
+        peripheral_s = peri
+        peripheral_s.delegate = self
         do {
             try centralManager.connect(peripheral_s)
         } catch {
             restart()
-            self.Conn()
+            self.Conn(peri: peri)
         }
     }
     
@@ -189,6 +197,7 @@ class BLE: NSObject, CBCentralManagerDelegate, CBPeripheralDelegate, CLLocationM
     
     func centralManager(_ central: CBCentralManager, didFailToConnect peripheral_s: CBPeripheral, error: (any Error)?) {
         let FIN = "Failed to connect"
+        print(FIN)
         BLEPublisher.send(FIN)
         restart()
     }
@@ -197,7 +206,7 @@ class BLE: NSObject, CBCentralManagerDelegate, CBPeripheralDelegate, CLLocationM
         let FIN = "Disconnected"
         BLEPublisher.send(FIN)
         if isReconnecting {
-            Conn()
+            Conn(peri: peripheral_s)
         } else {
             restart()
         }

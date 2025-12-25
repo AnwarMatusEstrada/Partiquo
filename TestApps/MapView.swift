@@ -17,6 +17,7 @@ func readFromHist(filen: String, maxRead: Int) -> String{
         text = try String(contentsOf: file, encoding: .utf8)
         let arr: Array = text.split(separator: "\n", omittingEmptySubsequences: true)
         let Arr = arr.suffix(maxRead)
+        print(Arr.joined(separator: "\n"))
         return Arr.joined(separator: "\n")
     } catch {
         print("Not read from file: \(file)")
