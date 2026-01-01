@@ -215,17 +215,17 @@ struct BLETestView: View {
                     var todo = "\(dt),\(lat),\(lon),\(FIN)\n"
                     self.fin = "\(dt)\n\(lat)\n\(lon)\nPM10: \(FIN.split(separator: ",")[0])     PM2.5: \(FIN.split(separator: ",")[1])\n"
                     print("written to file?: \(writeToHist(msg: todo.data(using: .utf8)!, fname: fn)) \(fn)")
-                } else {
-                    if (FIN != nil) && (FIN != "- -") && (FIN != "Resetting...") && (FIN != "Wait and press initiate") && (FIN != "") && (FIN != "Disconnected") && (FIN != "Failed to connect"){
-                        if ((Int(FIN.split(separator: ",")[0])!) > 150){
-                            self.showAlert = true
-                            feedback.impactOccurred()
-                            let systemSoundID: SystemSoundID = 1016
-                            AudioServicesPlaySystemSound(systemSoundID)
-                        }
+                    if ((Int(FIN.split(separator: ",")[0])!) > 100){
+                        self.showAlert = true
+                        feedback.impactOccurred()
+                        let systemSoundID: SystemSoundID = 1016
+                        AudioServicesPlaySystemSound(systemSoundID)
                     }
-                    fin = FIN
-                    print("\(FIN)")
+                } else {
+                    if (FIN != nil){
+                        fin = FIN
+                        print("\(FIN)")
+                    }
                 }
             }
             .store(in: &tokens)
