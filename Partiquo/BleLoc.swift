@@ -5,6 +5,8 @@ import CoreLocation
 
 class BLE: NSObject, CBCentralManagerDelegate, CBPeripheralDelegate, CLLocationManagerDelegate, ObservableObject{
     
+    //Initalization
+    
     var BLEPublisher = PassthroughSubject<String, Error>()
     var locationPublisher = PassthroughSubject<CLLocationCoordinate2D, Error>()
     var BLEDevPublisher = PassthroughSubject<CBPeripheral, Error>()
@@ -24,7 +26,6 @@ class BLE: NSObject, CBCentralManagerDelegate, CBPeripheralDelegate, CLLocationM
         centralManager = CBCentralManager(delegate: self, queue: DispatchQueue.global())
     }
 
-
     private lazy var locationManager: CLLocationManager = {
         
         let manager = CLLocationManager()
@@ -41,11 +42,14 @@ class BLE: NSObject, CBCentralManagerDelegate, CBPeripheralDelegate, CLLocationM
             locationManager.requestAlwaysAuthorization()
         case .authorizedWhenInUse, .authorizedAlways:
             locationManager.requestAlwaysAuthorization()
-            locationManager.startUpdatingLocation()
+            //locationManager.startUpdatingLocation()
+            locationManager.stopUpdatingLocation()
         default:
             break
         }
     }
+    
+    //Custom functions
     
     func restart() {
         self.centralManager = CBCentralManager(delegate: nil, queue: nil)
@@ -55,12 +59,15 @@ class BLE: NSObject, CBCentralManagerDelegate, CBPeripheralDelegate, CLLocationM
     func TimerToggle(seg: Double) {
         
         if sign == "Start" {
+            timer.invalidate()
+            requestLocationUpdates()
             timer = Timer.scheduledTimer(withTimeInterval: seg, repeats: true) {_ in
                 self.ActivityStart()
             }
             print("Started Timer")
         }
         if sign == "Stop" {
+            locationManager.stopUpdatingLocation()
             timer.invalidate()
             print("Invalidated Timer")
         }
@@ -79,60 +86,9 @@ class BLE: NSObject, CBCentralManagerDelegate, CBPeripheralDelegate, CLLocationM
         }
     }
     
-    func centralManagerDidUpdateState(_ central: CBCentralManager) {
-       var consoleLog = ""
-
-       switch central.state {
-       case .poweredOff:
-           consoleLog = "BLE is powered off"
-       case .poweredOn:
-           consoleLog = "BLE is poweredOn"
-           print(consoleLog)
-           Scan()
-           return
-       case .resetting:
-           consoleLog = "BLE is resetting"
-       case .unauthorized:
-           consoleLog = "BLE is unauthorized"
-       case .unknown:
-           consoleLog = "BLE is unknown"
-       case .unsupported:
-           consoleLog = "BLE is unsupported"
-       default:
-           consoleLog = "default"
-       }
-        print(consoleLog)
-        
-    }
-    
     func Scan() {
         centralManager.scanForPeripherals(withServices: nil, options: nil)
         //print("Scanning: \(centralManager.isScanning)")
-    }
-    
-    func centralManager(_ central: CBCentralManager, didDiscover peripheral: CBPeripheral, advertisementData: [String : Any], rssi RSSI: NSNumber) {
-        //print("Periph. available: \(peripheral)")
-        //print("ID Data:\(peripheral)")
-        BLEDevPublisher.send(peripheral)
-        //        if ((peripheral.identifier) == UUID(uuidString: "F3DEFC13-3F91-8011-07EE-ED63B11804F7")) {
-        //            print("ID Data:\(peripheral.identifier), \(peripheral.name!)")
-        //            //print("\(peripheral) =? \(peripheral)")
-        //peripheral_s = peripheral
-        //            peripheral_s.delegate = self
-            //let FIN = "\(peripheral_s.identifier)"
-            //BLEPublisher.send(FIN)
-    }
-
-    func centralManager(_ central: CBCentralManager, didConnect peripheral_s: CBPeripheral) {
-        print("Connected to peripheral: \(peripheral_s.name!)")
-        peripheral_s.discoverServices(nil)
-    }
-    
-    func peripheral(_ peripheral_s: CBPeripheral, didDiscoverServices  error: Error?){
-        //print("Servicios: \(peripheral_s.services!)")
-        //Servicios: [<CBService: 0x132f02180, isPrimary = YES, UUID = 6E400001-B5A3-F393-E0A9-E50E24DCCA9E>]
-        centralManager.stopScan()
-        peripheral_s.discoverCharacteristics(nil, for: peripheral_s.services!.first!)
     }
     
     func isOn() -> String{
@@ -161,6 +117,60 @@ class BLE: NSObject, CBCentralManagerDelegate, CBPeripheralDelegate, CLLocationM
         }
     }
     
+    //Contextual functions BLE
+    
+    func centralManagerDidUpdateState(_ central: CBCentralManager) {
+       var consoleLog = ""
+
+       switch central.state {
+       case .poweredOff:
+           consoleLog = "BLE is powered off"
+       case .poweredOn:
+           consoleLog = "BLE is poweredOn"
+           print(consoleLog)
+           Scan()
+           return
+       case .resetting:
+           consoleLog = "BLE is resetting"
+       case .unauthorized:
+           consoleLog = "BLE is unauthorized"
+       case .unknown:
+           consoleLog = "BLE is unknown"
+       case .unsupported:
+           consoleLog = "BLE is unsupported"
+       default:
+           consoleLog = "default"
+       }
+        print(consoleLog)
+        
+    }
+    
+    func centralManager(_ central: CBCentralManager, didDiscover peripheral: CBPeripheral, advertisementData: [String : Any], rssi RSSI: NSNumber) {
+        //print("Periph. available: \(peripheral)")
+        //print("ID Data:\(peripheral)")
+        BLEDevPublisher.send(peripheral)
+        //        if ((peripheral.identifier) == UUID(uuidString: "F3DEFC13-3F91-8011-07EE-ED63B11804F7")) {
+        //            print("ID Data:\(peripheral.identifier), \(peripheral.name!)")
+        //            //print("\(peripheral) =? \(peripheral)")
+        //peripheral_s = peripheral
+        //            peripheral_s.delegate = self
+            //let FIN = "\(peripheral_s.identifier)"
+            //BLEPublisher.send(FIN)
+    }
+
+    func centralManager(_ central: CBCentralManager, didConnect peripheral_s: CBPeripheral) {
+        print("Connected to peripheral: \(peripheral_s.name!)")
+        peripheral_s.discoverServices(nil)
+    }
+    
+    func peripheral(_ peripheral_s: CBPeripheral, didDiscoverServices  error: Error?){
+        //print("Servicios: \(peripheral_s.services!)")
+        //Servicios: [<CBService: 0x132f02180, isPrimary = YES, UUID = 6E400001-B5A3-F393-E0A9-E50E24DCCA9E>]
+        centralManager.stopScan()
+        peripheral_s.discoverCharacteristics(nil, for: peripheral_s.services!.first!)
+    }
+
+    
     func peripheral(_ peripheral_s: CBPeripheral, didDiscoverCharacteristicsFor service: CBService, error: (any Error)?) {
         //BLEPublisher.send(service.characteristics!)
         chara = service.characteristics!
@@ -169,6 +179,31 @@ class BLE: NSObject, CBCentralManagerDelegate, CBPeripheralDelegate, CLLocationM
         //print("Characteristic: \(chara!)")
         //[<CBCharacteristic: 0x12e14a1c0, UUID = 6E400003-B5A3-F393-E0A9-E50E24DCCA9E, properties = 0x12, value = (null), notifying = NO>, <CBCharacteristic: 0x12e148a80, UUID = 6E400002-B5A3-F393-E0A9-E50E24DCCA9E, properties = 0xC, value = (null), notifying = NO>]
     }
+    
+    func peripheral(_ peripheral_s: CBPeripheral, didUpdateValueFor chara1: CBCharacteristic, error: Error?) {
+        //let datas = chara1.value
+        //let byteData = Data(datas!)
+        locationManager.requestLocation()
+        let FIN = String(data: Data(chara1.value!), encoding: .utf8)!
+        BLEPublisher.send(FIN)
+        
+        //print(FIN)
+        //publish(asgn: fin, data: String(data: byteData, encoding: .utf8)! )
+    }
+    
+    func centralManager(_ central: CBCentralManager, didFailToConnect peripheral_s: CBPeripheral, error: (any Error)?) {
+        let FIN = "Failed to connect"
+        print(FIN)
+        BLEPublisher.send(FIN)
+        restart()
+    }
+    
+    func centralManager(_ central: CBCentralManager, didDisconnectPeripheral peripheral_s: CBPeripheral, timestamp: CFAbsoluteTime, isReconnecting: Bool, error: (any Error)?) {
+        let FIN = "Disconnected"
+        BLEPublisher.send(FIN)
+    }
+    
+    //Contextual functions Location
     
     func locationManagerDidChangeAuthorization(_ manager: CLLocationManager) {
         switch manager.authorizationStatus {
@@ -186,31 +221,10 @@ class BLE: NSObject, CBCentralManagerDelegate, CBPeripheralDelegate, CLLocationM
         locationPublisher.send(location.coordinate)
         //print("\(location.coordinate)")
     }
-  
-    func peripheral(_ peripheral_s: CBPeripheral, didUpdateValueFor chara1: CBCharacteristic, error: Error?) {
-        //let datas = chara1.value
-        //let byteData = Data(datas!)
-        let FIN = String(data: Data(chara1.value!), encoding: .utf8)!
-        BLEPublisher.send(FIN)
-        //print(FIN)
-        //publish(asgn: fin, data: String(data: byteData, encoding: .utf8)! )
-    }
     
-    func centralManager(_ central: CBCentralManager, didFailToConnect peripheral_s: CBPeripheral, error: (any Error)?) {
-        let FIN = "Failed to connect"
-        print(FIN)
-        BLEPublisher.send(FIN)
-        restart()
-    }
-    
-    func centralManager(_ central: CBCentralManager, didDisconnectPeripheral peripheral_s: CBPeripheral, timestamp: CFAbsoluteTime, isReconnecting: Bool, error: (any Error)?) {
-        let FIN = "Disconnected"
-        BLEPublisher.send(FIN)
-        if isReconnecting {
-            Conn(peri: peripheral_s)
-        } else {
-            restart()
-        }
+    func locationManager(_ manager: CLLocationManager, didFailWithError error: any Error) {
+        print("Location not. Trying again.")
+        locationManager.requestLocation()
     }
 }
 

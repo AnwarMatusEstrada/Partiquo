@@ -19,9 +19,9 @@ struct BLETestView: View {
     @State var showAlert:Bool = false
     @State var peris: [CBPeripheral] = []
     @State var names: [String] = []
-    @State var name: String = "Seleccione un dispositivo"
+    @State var name: String = "MPY ESP32"
     @State var selectedPeri: CBPeripheral? = nil
-    @State var Seg: Double = 2.0
+    @State var Seg: Double = 5.0
     @FocusState private var nameIsFocused: Bool
     
     
@@ -46,7 +46,6 @@ struct BLETestView: View {
                     .cornerRadius(5)
                     .foregroundStyle(Color.letra)
                 Picker("Selecciona un dispositivo:", selection: $name) {
-                    Text("\(names)")
                     ForEach(names, id: \.self) { name in
                         Text(name).tag(name) }
                 }.pickerStyle(.menu)
@@ -120,20 +119,17 @@ struct BLETestView: View {
             }.frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .center)
             
             NavigationStack{
-                HStack(spacing: 150) {
-                    NavigationLink(destination:{MapView(fn: fn, maxread: $maxread)}){
-                        Text("Map")
-                    }.foregroundStyle(Color.letraBott).padding(10).background(Color.bkBott).cornerRadius(5)
-                    
-                    NavigationLink(destination:{MenuArchView(maxread: $maxread)}){
-                        Text("Select file")
-                    }.foregroundStyle(Color.letraBott).padding(10).background(Color.bkBott).cornerRadius(5)
-                    
-                }.frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .center)
-            }
+                NavigationLink(destination:{MapView(fn: fn, maxread: $maxread)}){
+                    Text("Mapa")
+                }.foregroundStyle(Color.letraBott).padding(10).background(Color.bkBott).cornerRadius(5)
+                
+                NavigationLink(destination:{MenuArchView(maxread: $maxread)}){
+                    Text("Archivo")
+                }.foregroundStyle(Color.letraBott).padding(10).background(Color.bkBott).cornerRadius(5)
+            }.frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .center)
+            
         }.onAppear {
             observe()
-            recvData.requestLocationUpdates()
             
         }.alert("PM peligroso", isPresented: $showAlert) { // Binds to the state variable
             Button("OK") {
@@ -212,18 +208,25 @@ struct BLETestView: View {
             .sink { completion in
                 print("Handle \(completion) for error and finished subscription.")
             } receiveValue: { FIN in
-                var dt = formattedTime()
-                var lat = "\(self.coordinates.lat)"
-                var lon = "\(self.coordinates.lon)"
-                var todo = "\(dt),\(lat),\(lon),\(FIN)\n"
-                self.fin = "\(dt)\n\(lat)\n\(lon)\nPM10: \(FIN.split(separator: ",")[0])     PM2.5: \(FIN.split(separator: ",")[1])\n"
-                if (FIN != "- -") && (FIN != "Resetting...") && (FIN != "Wait and press initiate") && (FIN != "") && ((Int(FIN.split(separator: ",")[0])!) > 150){
-                    self.showAlert = true
-                    feedback.impactOccurred()
-                    let systemSoundID: SystemSoundID = 1016
-                    AudioServicesPlaySystemSound(systemSoundID)
+                if (FIN.split(separator: ",").count >= 2){
+                    var dt = formattedTime()
+                    var lat = "\(self.coordinates.lat)"
+                    var lon = "\(self.coordinates.lon)"
+                    var todo = "\(dt),\(lat),\(lon),\(FIN)\n"
+                    self.fin = "\(dt)\n\(lat)\n\(lon)\nPM10: \(FIN.split(separator: ",")[0])     PM2.5: \(FIN.split(separator: ",")[1])\n"
+                    print("written to file?: \(writeToHist(msg: todo.data(using: .utf8)!, fname: fn)) \(fn)")
+                } else {
+                    if (FIN != nil) && (FIN != "- -") && (FIN != "Resetting...") && (FIN != "Wait and press initiate") && (FIN != "") && (FIN != "Disconnected") && (FIN != "Failed to connect"){
+                        if ((Int(FIN.split(separator: ",")[0])!) > 150){
+                            self.showAlert = true
+                            feedback.impactOccurred()
+                            let systemSoundID: SystemSoundID = 1016
+                            AudioServicesPlaySystemSound(systemSoundID)
+                        }
+                    }
+                    fin = FIN
+                    print("\(FIN)")
                 }
-                print("written to file?: \(writeToHist(msg: todo.data(using: .utf8)!, fname: fn)) \(fn)")
             }
             .store(in: &tokens)
     }

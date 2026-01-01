@@ -10,13 +10,8 @@ import SwiftUI
 struct MenuView: View {
     var body: some View {
         NavigationStack{
-            List{
-                NavigationLink(destination:{CalcView()}){
-                    Text("Calculadora")
-                }
-                NavigationLink(destination:{BLETestView()}){
-                    Text("BLE Test")
-                }
+            NavigationLink(destination:{BLETestView()}){
+                Text("Partiquo")
             }
         }
     }

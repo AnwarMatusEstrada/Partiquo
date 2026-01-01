@@ -7,16 +7,16 @@
 	objects = {
 
 /* Begin PBXFileReference section */
-		C7F9E7382EF5BA03001A2A03 /* TestApps.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = TestApps.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		C7F9E7382EF5BA03001A2A03 /* Partiquo.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = Partiquo.app; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
 
 /* Begin PBXFileSystemSynchronizedBuildFileExceptionSet section */
-		C7B5B01F2EF7FD4E00D02364 /* Exceptions for "Partiquo" folder in "TestApps" target */ = {
+		C7B5B01F2EF7FD4E00D02364 /* Exceptions for "Partiquo" folder in "Partiquo" target */ = {
 			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
 			membershipExceptions = (
 				Info.plist,
 			);
-			target = C7F9E7372EF5BA03001A2A03 /* TestApps */;
+			target = C7F9E7372EF5BA03001A2A03 /* Partiquo */;
 		};
 /* End PBXFileSystemSynchronizedBuildFileExceptionSet section */
 
@@ -24,7 +24,7 @@
 		C7F9E73A2EF5BA03001A2A03 /* Partiquo */ = {
 			isa = PBXFileSystemSynchronizedRootGroup;
 			exceptions = (
-				C7B5B01F2EF7FD4E00D02364 /* Exceptions for "Partiquo" folder in "TestApps" target */,
+				C7B5B01F2EF7FD4E00D02364 /* Exceptions for "Partiquo" folder in "Partiquo" target */,
 			);
 			path = Partiquo;
 			sourceTree = "<group>";
@@ -53,7 +53,7 @@
 		C7F9E7392EF5BA03001A2A03 /* Products */ = {
 			isa = PBXGroup;
 			children = (
-				C7F9E7382EF5BA03001A2A03 /* TestApps.app */,
+				C7F9E7382EF5BA03001A2A03 /* Partiquo.app */,
 			);
 			name = Products;
 			sourceTree = "<group>";
@@ -61,9 +61,9 @@
 /* End PBXGroup section */
 
 /* Begin PBXNativeTarget section */
-		C7F9E7372EF5BA03001A2A03 /* TestApps */ = {
+		C7F9E7372EF5BA03001A2A03 /* Partiquo */ = {
 			isa = PBXNativeTarget;
-			buildConfigurationList = C7F9E7432EF5BA05001A2A03 /* Build configuration list for PBXNativeTarget "TestApps" */;
+			buildConfigurationList = C7F9E7432EF5BA05001A2A03 /* Build configuration list for PBXNativeTarget "Partiquo" */;
 			buildPhases = (
 				C7F9E7342EF5BA03001A2A03 /* Sources */,
 				C7F9E7352EF5BA03001A2A03 /* Frameworks */,
@@ -76,11 +76,11 @@
 			fileSystemSynchronizedGroups = (
 				C7F9E73A2EF5BA03001A2A03 /* Partiquo */,
 			);
-			name = TestApps;
+			name = Partiquo;
 			packageProductDependencies = (
 			);
 			productName = TestApps;
-			productReference = C7F9E7382EF5BA03001A2A03 /* TestApps.app */;
+			productReference = C7F9E7382EF5BA03001A2A03 /* Partiquo.app */;
 			productType = "com.apple.product-type.application";
 		};
 /* End PBXNativeTarget section */
@@ -98,7 +98,7 @@
 					};
 				};
 			};
-			buildConfigurationList = C7F9E7332EF5BA03001A2A03 /* Build configuration list for PBXProject "TestApps" */;
+			buildConfigurationList = C7F9E7332EF5BA03001A2A03 /* Build configuration list for PBXProject "Partiquo" */;
 			developmentRegion = en;
 			hasScannedForEncodings = 0;
 			knownRegions = (
@@ -112,7 +112,7 @@
 			projectDirPath = "";
 			projectRoot = "";
 			targets = (
-				C7F9E7372EF5BA03001A2A03 /* TestApps */,
+				C7F9E7372EF5BA03001A2A03 /* Partiquo */,
 			);
 		};
 /* End PBXProject section */
@@ -271,7 +271,7 @@
 				DEVELOPMENT_TEAM = 658FW27G9X;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
-				INFOPLIST_FILE = TestApps/Info.plist;
+				INFOPLIST_FILE = Partiquo/Info.plist;
 				INFOPLIST_KEY_CFBundleDisplayName = Partiquo;
 				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.healthcare-fitness";
 				INFOPLIST_KEY_NSBluetoothAlwaysUsageDescription = "To comunicate with the device";
@@ -310,7 +310,7 @@
 				CURRENT_PROJECT_VERSION = 1;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
-				INFOPLIST_FILE = TestApps/Info.plist;
+				INFOPLIST_FILE = Partiquo/Info.plist;
 				INFOPLIST_KEY_CFBundleDisplayName = Partiquo;
 				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.healthcare-fitness";
 				INFOPLIST_KEY_NSBluetoothAlwaysUsageDescription = "To comunicate with the device";
@@ -343,7 +343,7 @@
 /* End XCBuildConfiguration section */
 
 /* Begin XCConfigurationList section */
-		C7F9E7332EF5BA03001A2A03 /* Build configuration list for PBXProject "TestApps" */ = {
+		C7F9E7332EF5BA03001A2A03 /* Build configuration list for PBXProject "Partiquo" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
 				C7F9E7412EF5BA05001A2A03 /* Debug */,
@@ -352,7 +352,7 @@
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;
 		};
-		C7F9E7432EF5BA05001A2A03 /* Build configuration list for PBXNativeTarget "TestApps" */ = {
+		C7F9E7432EF5BA05001A2A03 /* Build configuration list for PBXNativeTarget "Partiquo" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
 				C7F9E7442EF5BA05001A2A03 /* Debug */,
