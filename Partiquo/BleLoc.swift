@@ -43,7 +43,6 @@ class BLE: NSObject, CBCentralManagerDelegate, CBPeripheralDelegate, CLLocationM
         case .authorizedWhenInUse, .authorizedAlways:
             locationManager.requestAlwaysAuthorization()
             //locationManager.startUpdatingLocation()
-            locationManager.stopUpdatingLocation()
         default:
             break
         }
@@ -219,6 +218,7 @@ class BLE: NSObject, CBCentralManagerDelegate, CBPeripheralDelegate, CLLocationM
     func locationManager(_ manager: CLLocationManager, didUpdateLocations locations: [CLLocation]) {
         guard let location = locations.last else { return }
         locationPublisher.send(location.coordinate)
+        locationManager.stopUpdatingLocation()
         //print("\(location.coordinate)")
     }
     
