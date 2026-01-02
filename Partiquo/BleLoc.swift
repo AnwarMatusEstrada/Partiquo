@@ -208,7 +208,8 @@ class BLE: NSObject, CBCentralManagerDelegate, CBPeripheralDelegate, CLLocationM
         switch manager.authorizationStatus {
             
         case .authorizedWhenInUse, .authorizedAlways:
-            manager.startUpdatingLocation()
+            //manager.startUpdatingLocation()
+            print("Authorized")
             
         default:
             manager.stopUpdatingLocation()
@@ -218,7 +219,7 @@ class BLE: NSObject, CBCentralManagerDelegate, CBPeripheralDelegate, CLLocationM
     func locationManager(_ manager: CLLocationManager, didUpdateLocations locations: [CLLocation]) {
         guard let location = locations.last else { return }
         locationPublisher.send(location.coordinate)
-        locationManager.stopUpdatingLocation()
+        //locationManager.stopUpdatingLocation()
         //print("\(location.coordinate)")
     }
     
