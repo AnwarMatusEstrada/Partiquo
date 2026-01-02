@@ -66,11 +66,12 @@ struct MapView: View {
                 continue
             }
             //print("\(dat)")
+            var hora = dat.split(separator: ",")[0].split(separator: " ")[1]
             let latt = dat.split(separator: ",")[1]
             let lonn = dat.split(separator: ",")[2]
             let PM10 = dat.split(separator: ",")[3]
             let PM2_5 = dat.split(separator: ",")[4]
-            TodoCoordinates.append("\(latt),\(lonn),\(PM10),\(PM2_5)")
+            TodoCoordinates.append("\(latt),\(lonn),\(PM10),\(PM2_5),\(hora)")
         }
         
         
@@ -86,33 +87,34 @@ struct MapView: View {
                     var lon = dato.split(separator: ",")[1]
                     var pm_10 = dato.split(separator: ",")[2]
                     var pm_2_5 = dato.split(separator: ",")[3]
+                    var hor = dato.split(separator: ",")[4]
                     var latslons = CLLocationCoordinate2D(latitude: Double(lat)!, longitude: Double(lon)!)
-                    if Double(pm_10)! > 200 {
-                        var Labe = "Contingencia Fase 2 (Extremo) \(pm_10),\(pm_2_5)"
+                    if Double(pm_10)! > 213 {
+                        var Labe = "Extremo \(pm_10),\(pm_2_5),\(hor)"
                         Marker(Labe, systemImage: "lungs.fill", coordinate: latslons).tint(Color.red)
                     }
-                    if Double(pm_10)! > 175 && Double(pm_10)! <= 200 {
-                        var Labe = "Contingencia Fase 1 (Peligroso) \(pm_10),\(pm_2_5)"
+                    if Double(pm_10)! > 132 && Double(pm_10)! <= 213 {
+                        var Labe = "Peligroso \(pm_10),\(pm_2_5),\(hor)"
                         Marker(Labe, systemImage: "lungs", coordinate: latslons).tint(Color.red)
                     }
-                    if Double(pm_10)! <= 175 && Double(pm_10)! >= 150 {
-                        var Labe = "Severo \(pm_10),\(pm_2_5)"
+                    if Double(pm_10)! <= 132 && Double(pm_10)! >= 50 {
+                        var Labe = "Severo \(pm_10),\(pm_2_5),\(hor)"
                         Marker(Labe, systemImage: "exclamationmark.triangle.fill", coordinate: latslons).tint(Color.orange)
                     }
-                    if Double(pm_10)! < 150 && Double(pm_10)! >= 80{
-                        var Labe = "Moderado \(pm_10),\(pm_2_5)"
+                    if Double(pm_10)! < 50 && Double(pm_10)! >= 45{
+                        var Labe = "Moderado \(pm_10),\(pm_2_5),\(hor)"
                         Marker(Labe, systemImage: "exclamationmark.triangle", coordinate: latslons).tint(Color.yellow)
                     }
-                    if Double(pm_10)! < 80 && Double(pm_10)! >= 40{
-                        var Labe = "Aceptable \(pm_10),\(pm_2_5)"
+                    if Double(pm_10)! < 45 && Double(pm_10)! >= 25{
+                        var Labe = "Aceptable \(pm_10),\(pm_2_5),\(hor)"
                         Marker(Labe, systemImage: "engine.emission.and.exclamationmark", coordinate: latslons).tint(Color.green)
                     }
-                    if Double(pm_10)! < 40 && Double(pm_10)! >= 25{
-                        var Labe = "Buena \(pm_10),\(pm_2_5)"
+                    if Double(pm_10)! < 25 && Double(pm_10)! >= 10{
+                        var Labe = "Buena \(pm_10),\(pm_2_5),\(hor)"
                         Marker(Labe, systemImage: "checkmark.circle.trianglebadge.exclamationmark", coordinate: latslons).tint(Color.blue)
                     }
-                    if Double(pm_10)! < 25{
-                        var Labe = "Sin contaminación \(pm_10),\(pm_2_5)"
+                    if Double(pm_10)! < 10{
+                        var Labe = "Limpio \(pm_10),\(pm_2_5),\(hor)"
                         Marker(Labe, systemImage: "checkmark.circle", coordinate: latslons).tint(Color.white)
                     }
                 }

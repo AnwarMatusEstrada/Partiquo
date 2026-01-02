@@ -22,6 +22,7 @@ struct BLETestView: View {
     @State var name: String = "MPY ESP32"
     @State var selectedPeri: CBPeripheral? = nil
     @State var Seg: Double = 5.0
+    @State var lastdate: String = ""
     @FocusState private var nameIsFocused: Bool
     
     
@@ -141,6 +142,7 @@ struct BLETestView: View {
     }
     
     func writeToHist(msg: Data, fname: String) -> Bool{
+        print("writeToHist")
         let Dir: URL = DocDir()
         let file: URL = Dir.appendingPathComponent(fname)
         do {
@@ -149,7 +151,14 @@ struct BLETestView: View {
                 fileHandle.closeFile()
             }
             fileHandle.seekToEndOfFile()
+            let currdate = String(String(data: msg, encoding: .utf8)!.split(separator: ",").first!)
+            //print(lastdate)
+            //print(currdate)
+            if currdate == lastdate{
+                return true
+            }
             try fileHandle.write(contentsOf: msg)
+            lastdate = currdate
             return true
         } catch {
             let fileManager = FileManager.default
@@ -208,18 +217,22 @@ struct BLETestView: View {
             .sink { completion in
                 print("Handle \(completion) for error and finished subscription.")
             } receiveValue: { FIN in
+                print(FIN)
                 if (FIN.split(separator: ",").count >= 2){
                     var dt = formattedTime()
                     var lat = "\(self.coordinates.lat)"
                     var lon = "\(self.coordinates.lon)"
-                    var todo = "\(dt),\(lat),\(lon),\(FIN)\n"
-                    self.fin = "\(dt)\n\(lat)\n\(lon)\nPM10: \(FIN.split(separator: ",")[0])     PM2.5: \(FIN.split(separator: ",")[1])\n"
-                    print("written to file?: \(writeToHist(msg: todo.data(using: .utf8)!, fname: fn)) \(fn)")
-                    if ((Int(FIN.split(separator: ",")[0])!) > 100){
-                        self.showAlert = true
-                        feedback.impactOccurred()
-                        let systemSoundID: SystemSoundID = 1016
-                        AudioServicesPlaySystemSound(systemSoundID)
+                    print(lat)
+                    if (lat != "\(0.0)") || (lon != "\(0.0)") {
+                        var todo = "\(dt),\(lat),\(lon),\(FIN)\n"
+                        self.fin = "\(dt)\n\(lat)\n\(lon)\nPM10: \(FIN.split(separator: ",")[0])     PM2.5: \(FIN.split(separator: ",")[1])\n"
+                        print("written to file?: \(writeToHist(msg: todo.data(using: .utf8)!, fname: fn)) \(fn)")
+                        if ((Int(FIN.split(separator: ",")[0])!) > 100){
+                            self.showAlert = true
+                            feedback.impactOccurred()
+                            let systemSoundID: SystemSoundID = 1016
+                            AudioServicesPlaySystemSound(systemSoundID)
+                        }
                     }
                 } else {
                     if (FIN != nil){
