@@ -227,7 +227,7 @@ struct BLETestView: View {
                         var todo = "\(dt),\(lat),\(lon),\(FIN)\n"
                         self.fin = "\(dt)\n\(lat)\n\(lon)\nPM10: \(FIN.split(separator: ",")[0])     PM2.5: \(FIN.split(separator: ",")[1])\n"
                         print("written to file?: \(writeToHist(msg: todo.data(using: .utf8)!, fname: fn)) \(fn)")
-                        if ((Int(FIN.split(separator: ",")[0])!) > 100){
+                        if ((Float(FIN.split(separator: ",")[0])!) > 100){
                             self.showAlert = true
                             feedback.impactOccurred()
                             let systemSoundID: SystemSoundID = 1016
