@@ -66,12 +66,17 @@ struct MapView: View {
                 continue
             }
             //print("\(dat)")
-            var hora = dat.split(separator: ",")[0].split(separator: " ")[1]
+            let hora = dat.split(separator: ",")[0].split(separator: " ")[1]
             let latt = dat.split(separator: ",")[1]
             let lonn = dat.split(separator: ",")[2]
-            let PM10 = dat.split(separator: ",")[3]
-            let PM2_5 = dat.split(separator: ",")[4]
-            TodoCoordinates.append("\(latt),\(lonn),\(PM10),\(PM2_5),\(hora)")
+            let PM10 = dat.split(separator: ",")[4]
+            let PM2_5 = dat.split(separator: ",")[3]
+            
+            if Double(PM10) == nil || Double(PM2_5) == nil{
+                continue
+            }
+            
+            TodoCoordinates.append("\(latt),\(lonn),\(PM2_5),\(PM10),\(hora)")
         }
         
         
@@ -80,43 +85,86 @@ struct MapView: View {
 
     var body: some View {
         Map() {
-            var TodoCo = AllMarkers(dataTodo)
+            let TodoCo = AllMarkers(dataTodo)
             if TodoCo != [""] {
                 ForEach(TodoCo, id: \.self) { dato in
-                    var lat = dato.split(separator: ",")[0]
-                    var lon = dato.split(separator: ",")[1]
-                    var pm_10 = dato.split(separator: ",")[2]
-                    var pm_2_5 = dato.split(separator: ",")[3]
-                    var hor = dato.split(separator: ",")[4]
-                    var latslons = CLLocationCoordinate2D(latitude: Double(lat)!, longitude: Double(lon)!)
+                    let lat = dato.split(separator: ",")[0]
+                    let lon = dato.split(separator: ",")[1]
+                    let pm_10 = dato.split(separator: ",")[3]
+                    let pm_2_5 = dato.split(separator: ",")[2]
+                    let hor = dato.split(separator: ",")[4]
+                    let Msize:CGFloat = 12
+                    let latslons = CLLocationCoordinate2D(latitude: Double(lat)!, longitude: Double(lon)!)
+                    
+                    
                     if Double(pm_10)! > 213 {
-                        var Labe = "Extremo \(pm_10),\(pm_2_5),\(hor)"
-                        Marker(Labe, systemImage: "lungs.fill", coordinate: latslons).tint(Color.red)
+                        Annotation("Extremo \(pm_2_5),\(pm_10),\(hor)", coordinate: latslons) {
+                            Image(systemName: "lungs.fill")
+                                .font(.system(size: Msize+8))   // works here
+                                .foregroundStyle(.red)
+                                .padding(5)
+                                .background(.clear, in: Circle())
+                        }
                     }
                     if Double(pm_10)! > 132 && Double(pm_10)! <= 213 {
-                        var Labe = "Peligroso \(pm_10),\(pm_2_5),\(hor)"
-                        Marker(Labe, systemImage: "lungs", coordinate: latslons).tint(Color.red)
+                        Annotation("Peligroso \(pm_2_5),\(pm_10),\(hor)", coordinate: latslons) {
+                            Image(systemName: "lungs")
+                                .font(.system(size: Msize+6))   // works here
+                                .foregroundStyle(.red)
+                                .padding(5)
+                                .background(.clear, in: Circle())
+                        }
                     }
                     if Double(pm_10)! <= 132 && Double(pm_10)! >= 50 {
-                        var Labe = "Severo \(pm_10),\(pm_2_5),\(hor)"
-                        Marker(Labe, systemImage: "exclamationmark.triangle.fill", coordinate: latslons).tint(Color.orange)
+                        Annotation("Severo \(pm_2_5),\(pm_10),\(hor)", coordinate: latslons) {
+                            Image(systemName: "exclamationmark.triangle.fill")
+                                .font(.system(size: Msize+4))   // works here
+                                .foregroundStyle(.orange)
+                                .padding(5)
+                                .background(.clear, in: Circle())
+                        }
                     }
                     if Double(pm_10)! < 50 && Double(pm_10)! >= 45{
-                        var Labe = "Moderado \(pm_10),\(pm_2_5),\(hor)"
-                        Marker(Labe, systemImage: "exclamationmark.triangle", coordinate: latslons).tint(Color.yellow)
+                        Annotation("Moderado \(pm_2_5),\(pm_10),\(hor)", coordinate: latslons) {
+                            Image(systemName: "exclamationmark.triangle")
+                                .font(.system(size: Msize+2))   // works here
+                                .foregroundStyle(.yellow)
+                                .padding(5)
+                                .background(.clear, in: Circle())
+                        }
                     }
                     if Double(pm_10)! < 45 && Double(pm_10)! >= 25{
-                        var Labe = "Aceptable \(pm_10),\(pm_2_5),\(hor)"
-                        Marker(Labe, systemImage: "engine.emission.and.exclamationmark", coordinate: latslons).tint(Color.green)
+                        Annotation("Aceptable \(pm_2_5),\(pm_10),\(hor)", coordinate: latslons) {
+                            Image(systemName: "engine.emission.and.exclamationmark")
+                                .font(.system(size: Msize))   // works here
+                                .foregroundStyle(.green)
+                                .padding(5)
+                                .background(.clear, in: Circle())
+                        }
                     }
+
                     if Double(pm_10)! < 25 && Double(pm_10)! >= 10{
-                        var Labe = "Buena \(pm_10),\(pm_2_5),\(hor)"
-                        Marker(Labe, systemImage: "checkmark.circle.trianglebadge.exclamationmark", coordinate: latslons).tint(Color.blue)
+                        Annotation("Buena \(pm_2_5),\(pm_10),\(hor)", coordinate: latslons) {
+                            Image(systemName: "checkmark.circle.trianglebadge.exclamationmark")
+                                .font(.system(size: Msize))   // works here
+                                .foregroundStyle(.blue)
+                                .padding(5)
+                                .background(.clear, in: Circle())
+                        }
                     }
                     if Double(pm_10)! < 10{
-                        var Labe = "Limpio \(pm_10),\(pm_2_5),\(hor)"
-                        Marker(Labe, systemImage: "checkmark.circle", coordinate: latslons).tint(Color.white)
+                        Annotation("Limpio \(pm_2_5),\(pm_10),\(hor)", coordinate: latslons) {
+                            Image(systemName: "checkmark.circle")
+                                .font(.system(size: Msize))   // works here
+                                .foregroundStyle(.white)
+                                .padding(5)
+                                .background(.clear, in: Circle())
+                        }
                     }
+//                    if Double(pm_10)! < 10{
+//                        let Labe = "Limpio \(pm_2_5),\(pm_10),\(hor)"
+//                        Marker(Labe, systemImage: "checkmark.circle", coordinate: latslons).tint(Color.white)
+//                    }
                 }
             }
         }.onAppear() {

@@ -9,9 +9,27 @@ import SwiftUI
 import Foundation
 internal import Combine
 
+func filesByCreationDate(in dir: String, newestFirst: Bool = true) -> [String] {
+    let dirURL = URL(fileURLWithPath: dir)
+
+    guard let urls = try? FileManager.default.contentsOfDirectory(
+        at: dirURL,
+        includingPropertiesForKeys: [.creationDateKey],
+        options: [.skipsHiddenFiles]
+    ) else { return [] }
+
+    let sorted = urls.sorted { a, b in
+        let dateA = (try? a.resourceValues(forKeys: [.creationDateKey]).creationDate) ?? .distantPast
+        let dateB = (try? b.resourceValues(forKeys: [.creationDateKey]).creationDate) ?? .distantPast
+        return newestFirst ? dateA > dateB : dateA < dateB
+    }
+
+    return sorted.map { $0.lastPathComponent }
+}
+
 struct MenuArchView: View {
     
-    @Binding var maxread: Int
+    @State var maxread: Int = 1000000
     @State var Dir: String = URL.documentsDirectory.path
     @State var cont: [String] = []
     @State private var files: [URL] = []
@@ -20,7 +38,7 @@ struct MenuArchView: View {
         // The IndexSet contains the indices of the items to be deleted
         
         let fileManager = FileManager.default
-        var url = offsets.map { files[$0] }
+        let url = offsets.map { files[$0] }
         for url2 in url{
             //print("url2:\(url2)")
             do {
@@ -51,20 +69,17 @@ struct MenuArchView: View {
                 }.onDelete(perform: deleteFile)
             }
         }.onAppear {
-            do{
-                //print("Directory =\(Dir):")
-                cont = try FileManager.default.contentsOfDirectory(atPath: "\(Dir)")
-                print("cont =\(cont):")
+            
+            //print("Directory =\(Dir):")
+            cont = filesByCreationDate(in: Dir)
+            print("cont =\(cont):")
+            
+            var FILE: String = ""
+            for c in cont{
+                FILE = ("\(Dir)/\(c)")
+                //print("File_________:\(FILE):")
+                files.append(URL(fileURLWithPath:FILE))
                 
-                var FILE: String = ""
-                for c in cont{
-                    FILE = ("\(Dir)/\(c)")
-                    //print("File_________:\(FILE):")
-                    files.append(URL(fileURLWithPath:FILE))
-                    
-                }
-            } catch {
-                print("Not Read for \(Dir): \(error)")
             }
         }
     }

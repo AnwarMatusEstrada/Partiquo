@@ -74,9 +74,6 @@ class BLE: NSObject, CBCentralManagerDelegate, CBPeripheralDelegate, CLLocationM
     
     @objc func ActivityStart() {
         if sign != "Stop" {
-            while chara.isEmpty {
-                print("empty chara")
-            }
             let chara1 = chara.first!
             let chara2 = chara.last!
             let msg: String = "$\(sign)$"
@@ -95,25 +92,20 @@ class BLE: NSObject, CBCentralManagerDelegate, CBPeripheralDelegate, CLLocationM
         return sta
     }
         
-    func getCBUUID() -> CBUUID {
-        let CBUUIDConst = CBUUID(string: "F3DEFC13-3F91-8011-07EE-ED63B11804F7")
-        //print("\(CBUUIDConst)")
-        return CBUUIDConst
-    }
+//    func getCBUUID() -> CBUUID {
+//        let CBUUIDConst = CBUUID(string: "F3DEFC13-3F91-8011-07EE-ED63B11804F7")
+//        //print("\(CBUUIDConst)")
+//        return CBUUIDConst
+//    }
 
     func Conn(peri: CBPeripheral){
         print("Connecting")
-        if peri == nil {
-            return
-        }
+//        if peri == nil {
+//            return
+//        }
         peripheral_s = peri
         peripheral_s.delegate = self
-        do {
-            try centralManager.connect(peripheral_s)
-        } catch {
-            restart()
-            self.Conn(peri: peri)
-        }
+        centralManager.connect(peripheral_s)
     }
     
     //Contextual functions BLE
@@ -195,11 +187,13 @@ class BLE: NSObject, CBCentralManagerDelegate, CBPeripheralDelegate, CLLocationM
         print(FIN)
         BLEPublisher.send(FIN)
         restart()
+        self.Conn(peri: peripheral_s)
     }
     
     func centralManager(_ central: CBCentralManager, didDisconnectPeripheral peripheral_s: CBPeripheral, timestamp: CFAbsoluteTime, isReconnecting: Bool, error: (any Error)?) {
         let FIN = "Disconnected"
         BLEPublisher.send(FIN)
+        Scan()
     }
     
     //Contextual functions Location
